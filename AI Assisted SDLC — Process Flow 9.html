@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>InterIIM — SDLC Serpentine Process</title>
+<style>
+  :root{
+    --bg:#f5f7fb; --navy:#232a63; --teal:#155f7d; --ink:#1d2333; --muted:#6b7488; --line:#e3e7f0;
+    --ba:#e39a1b; --intro:#2f6bd8; --valid:#8657d6; --contract:#0f9bb0; --handoff:#d95c95; --modern:#1f9d6b; --input:#155f7d;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:'Segoe UI',system-ui,-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1100px 620px at 12% -8%, #eef2fb, transparent 60%),
+      radial-gradient(900px 560px at 108% 0%, #eaf6fa, transparent 62%),
+      var(--bg);
+    min-height:100%;
+  }
+  header{padding:26px 46px 4px;}
+  header .eyebrow{font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--teal);font-weight:800;}
+  header h1{margin:6px 0 0;font-size:30px;font-weight:800;letter-spacing:-.015em;color:var(--navy);}
+  header p{margin:8px 0 0;color:var(--muted);font-size:14px;max-width:900px;}
+
+  .toolbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 46px 0;}
+  .btn{display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--navy);
+    padding:9px 16px;border-radius:999px;font-size:13px;font-weight:700;box-shadow:0 2px 10px rgba(35,42,99,.07);transition:.18s;}
+  .btn:hover{border-color:var(--teal);color:var(--teal);transform:translateY(-1px);}
+  .btn svg{width:15px;height:15px;}
+  .legend{display:flex;gap:12px 16px;flex-wrap:wrap;font-size:12px;color:var(--muted);align-items:center;}
+  .legend .it{display:inline-flex;align-items:center;gap:7px;}
+  .legend .sw{width:13px;height:13px;border-radius:4px;}
+  .legend .halo-sw{width:13px;height:13px;border-radius:50%;background:#fff;border:2px solid var(--valid);box-shadow:0 0 0 3px rgba(134,87,214,.22);}
+
+  .stage{padding:4px 18px 40px;}
+  svg#flow{width:100%;height:auto;display:block;max-width:1440px;margin:0 auto;}
+
+  .track{fill:none;stroke:#e2e7f2;stroke-width:18;stroke-linecap:round;stroke-linejoin:round;}
+  .seg{fill:none;stroke-width:11;stroke-linecap:butt;}
+  .stem{stroke-width:5;stroke-linecap:round;}
+  .stop{cursor:pointer;}
+  .pin .ring{fill:#fff;filter:url(#pinShadow);}
+  .icon *{vector-effect:non-scaling-stroke;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:2;}
+  text.phaseT{font-weight:800;font-size:10px;letter-spacing:.1em;text-transform:uppercase;}
+  text.lbl{fill:var(--navy);font-weight:700;font-size:13.5px;}
+  text.agentT{fill:#3b78a0;font-size:10.5px;font-weight:700;font-family:"SFMono-Regular",Consolas,monospace;}
+  text.descT{fill:var(--muted);font-size:10.5px;}
+  .halo{fill:var(--valid);opacity:.15;}
+  .hdot circle.bg{fill:#fff;stroke:var(--valid);stroke-width:2;}
+  .hdot .icon *{stroke:var(--valid);}
+  .pulse{fill:#25c2e6;}
+
+  #tip{position:fixed;z-index:60;max-width:320px;pointer-events:none;background:#0f1530;color:#eef2ff;
+    border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px 14px;box-shadow:0 18px 46px rgba(0,0,0,.4);
+    opacity:0;transform:translateY(6px);transition:opacity .18s,transform .18s;}
+  #tip.show{opacity:1;transform:none;}
+  #tip .t-phase{font-size:9.5px;letter-spacing:1.2px;text-transform:uppercase;font-weight:800;color:#7fd6ee;}
+  #tip .t-title{font-size:15px;font-weight:800;margin:4px 0 6px;}
+  #tip .t-row{font-size:11.5px;line-height:1.5;margin-top:5px;color:#c7d0ee;}
+  #tip .t-row b{color:#fff;}
+  #tip code{font-family:"SFMono-Regular",Consolas,monospace;font-size:10.5px;background:rgba(255,255,255,.1);padding:1px 5px;border-radius:4px;color:#bfe4ff;}
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:0 46px 44px;}
+  footer code{background:#eaeef7;color:var(--navy);padding:1px 6px;border-radius:4px;font-size:11px;}
+  .footnote{text-align:center;color:var(--muted);font-size:11px;padding:0 46px 30px;}
+  .footnote a{color:var(--teal);text-decoration:underline;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">InterIIM Modernization Program</div>
+  <h1>End-to-End AI Assisted SDLC — Process Flow</h1>
+  <p>Follow the road from legacy source through governed specs, the BA validation loop, the contract, and the tested build. Hover or tap any stop for its phase, agent, skill, purpose, inputs and outputs.</p>
+</header>
+
+<div class="toolbar">
+  <button class="btn" id="replay">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>
+    Replay
+  </button>
+  <div class="legend" id="legend"></div>
+</div>
+
+<div class="stage">
+  <svg id="flow" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SDLC serpentine process flow"></svg>
+</div>
+
+<footer>
+  Two repos, one contract: <code>forward/openapi.yaml</code>. The <b>BA Validation Loop</b> (steps 7-9) reconciles the FS against legacy code and the toolkit BRDs before the contract is generated.
+</footer>
+
+<div class="footnote">For more details or questions, contact me at <a href="mailto:anupam.agrawal@intact.net">anupam.agrawal@intact.net</a></div>
+
+<div id="tip"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/MotionPathPlugin.min.js"></script>
+<script id="app">
+const SVGNS='http://www.w3.org/2000/svg';
+const hasGSAP=typeof gsap!=='undefined';
+if(hasGSAP && window.MotionPathPlugin) gsap.registerPlugin(MotionPathPlugin);
+
+const PHASES={
+  input:{label:'Source Input',color:'#155f7d'},
+  ba:{label:'Business Analysis',color:'#e39a1b'},
+  intro:{label:'Introspection',color:'#2f6bd8'},
+  valid:{label:'BA Validation Loop',color:'#8657d6'},
+  contract:{label:'Contract & Tests',color:'#0f9bb0'},
+  handoff:{label:'Contract Handoff',color:'#d95c95'},
+  modern:{label:'Modernization (opsx)',color:'#1f9d6b'}
+};
+
+// relevant line icons (24x24 viewBox)
+const ICONS={
+  code:'<polyline points="8 7 3 12 8 17"/><polyline points="16 7 21 12 16 17"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/>',
+  question:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.6 2.6 0 1 1 3.6 2.4c-.9.4-1.3 1-1.3 2"/><circle cx="12" cy="17" r=".6"/>',
+  layers:'<polygon points="12 3 21 8 12 13 3 8"/><polyline points="3 12 12 17 21 12"/><polyline points="3 16 12 21 21 16"/>',
+  list:'<circle cx="4.5" cy="7" r="1.1"/><circle cx="4.5" cy="12" r="1.1"/><circle cx="4.5" cy="17" r="1.1"/><line x1="9" y1="7" x2="20" y2="7"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="17" x2="20" y2="17"/>',
+  database:'<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>',
+  swap:'<path d="M4 9h13"/><polyline points="14 6 17 9 14 12"/><path d="M20 15H7"/><polyline points="10 12 7 15 10 18"/>',
+  search:'<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/>',
+  flag:'<line x1="5" y1="21" x2="5" y2="4"/><path d="M5 5h11l-2.5 3.5L16 12H5"/>',
+  signoff:'<path d="M12 2l2.3 1.7 2.9-.1 1 2.7 2.4 1.6-1 2.8 1 2.8-2.4 1.6-1 2.7-2.9-.1L12 22l-2.3-1.7-2.9.1-1-2.7-2.4-1.6 1-2.8-1-2.8 2.4-1.6 1-2.7 2.9.1z"/><polyline points="9 12 11 14 15 10"/>',
+  contract:'<path d="M6 2.5h9l4 4V21.5H6z"/><polyline points="15 2.5 15 7 19 7"/><path d="M9.5 12.5c-1 0-1 2.5 0 2.5"/><path d="M14.5 12.5c1 0 1 2.5 0 2.5"/>',
+  link:'<path d="M9.5 14.5l5-5"/><path d="M11 6l1-1a4 4 0 0 1 6 6l-1 1"/><path d="M13 18l-1 1a4 4 0 0 1-6-6l1-1"/>',
+  beaker:'<path d="M9 3h6"/><path d="M10 3v6l-5 9.2A2 2 0 0 0 6.8 21h10.4a2 2 0 0 0 1.8-2.8L14 9V3"/><line x1="7.2" y1="15.5" x2="16.8" y2="15.5"/>',
+  handoff:'<path d="M3 12h6l1.5-1.5L12 12l1.5-1.5L15 12h6"/><polyline points="6 9 3 12 6 15"/><polyline points="18 9 21 12 18 15"/>',
+  bulb:'<path d="M9.5 18.5h5"/><path d="M10 21.5h4"/><path d="M12 2.5a6 6 0 0 0-3.8 10.6c.9.8 1.3 1.6 1.3 2.4h5c0-.8.4-1.6 1.3-2.4A6 6 0 0 0 12 2.5z"/>',
+  gear:'<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.2 5.2l2.1 2.1M16.7 16.7l2.1 2.1M18.8 5.2l-2.1 2.1M7.3 16.7l-2.1 2.1"/>',
+  package:'<path d="M21 16V8l-9-5-9 5v8l9 5 9-5z"/><polyline points="3 8 12 13 21 8"/><line x1="12" y1="13" x2="12" y2="22"/>',
+  eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  shield:'<path d="M12 2.5l7.5 3v6c0 4.3-3.2 7.6-7.5 9.5C7.7 19.1 4.5 15.8 4.5 11.5v-6z"/><polyline points="9 12 11 14 15 10"/>',
+  archive:'<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11h14V8"/><line x1="10" y1="12.5" x2="14" y2="12.5"/>'
+};
+
+const STEPS=[
+  {id:'0',phase:'input',icon:'code',title:'Legacy .NET + SQL',agent:'source',desc:'Read-only source',skill:'ASPX · procs · SQL',
+    purpose:'Legacy ASP.NET WebForms plus stored procedures and SQL — the read-only source input for the whole modernization.',input:'—',output:'Read-only codebase + schema.'},
+  {id:'1',phase:'ba',human:true,icon:'user',title:'BA Functional Spec (FS)',agent:'BA',desc:'Authors intent baseline',skill:'Manual authoring',
+    purpose:'The BA authors an independent Functional Spec from business-team communication and their own understanding — the intent baseline.',input:'Business interviews + domain knowledge.',output:'BA FS document (intent baseline).'},
+  {id:'2',phase:'intro',icon:'question',title:'Tech Stack Questions',agent:'@target-stack',desc:'Stack discovery',skill:'tech-stack-generation',
+    purpose:'Capture legacy languages, frameworks and DB engines to frame the modernization.',input:'Legacy solution + SME answers.',output:'Answered tech-stack questionnaire.'},
+  {id:'3',phase:'intro',icon:'layers',title:'Target Tech Stack Docs',agent:'@target-stack',desc:'Target platform specs',skill:'tech-stack-generation',
+    purpose:'Define the target platform and conventions so every downstream artifact targets the same stack.',input:'Tech-stack answers + standards.',output:'Java 21 · Spring Boot 4 · Angular 20 · MSSQL specs.'},
+  {id:'4',phase:'intro',icon:'list',title:'Feature Inventory',agent:'@feature-scanner',desc:'Capability catalogue',skill:'feature-scanner',
+    purpose:'Scan the legacy app into a complete catalogue of existing capabilities.',input:'Legacy source code (read-only).',output:'FEATURE-INVENTORY.md'},
+  {id:'5',phase:'intro',icon:'database',title:'Entity Docs',agent:'@entity-scanner',desc:'Schema authority',skill:'entity-detection',
+    purpose:'Scan the database into an authoritative SP / table / column reference — schema is authoritative.',input:'SQL extracts.',output:'Entity docs (SP / table catalogue).'},
+  {id:'6',phase:'intro',icon:'swap',title:'Reverse & Forward BRDs',agent:'@reverse / @forward-eng',desc:'Reverse + forward reqs',skill:'reverse-engineer-brd · forward-engineer-brd',
+    purpose:'Produce Reverse BRDs (what legacy does today) and Forward BRDs (target behaviour on the new stack).',input:'Legacy code + inventory + entity docs + rules.',output:'Reverse BRDs + Forward BRDs.'},
+  {id:'7',phase:'valid',human:true,reconcile:true,icon:'search',title:'BA Parity Check (AI)',agent:'BA + AI',desc:'AI three-way parity',skill:'AI parity analysis',
+    purpose:'The BA validates the BRDs via an AI-driven three-way parity check to surface mismatches before anything is trusted.',input:'BA FS · codebase · toolkit BRDs.',output:'Parity report (agreements + disparities).'},
+  {id:'8',phase:'valid',human:true,reconcile:true,icon:'flag',title:'Flag & Assign Disparities',agent:'BA',desc:'Disparity triage',skill:'Manual triage',
+    purpose:'The BA flags every disparity and assigns each to a developer to fix the Forward BRD.',input:'Parity report.',output:'Prioritised disparity list with owners.'},
+  {id:'9',phase:'valid',human:true,reconcile:true,icon:'signoff',title:'Developer Update + BA Sign-off',agent:'Developer + BA',desc:'Reconcile & sign-off',skill:'Manual + review',
+    purpose:'Developers update the Forward BRD to resolve flagged items; the BA reviews and signs off. Only signed-off BRDs proceed.',input:'Assigned disparities + Forward BRDs.',output:'Reconciled, BA-signed-off Forward BRDs.'},
+  {id:'10',phase:'contract',icon:'contract',title:'OpenAPI Contract (v1→v2)',agent:'@openapi-generator',desc:'Single source of truth',skill:'openapi-generator',
+    purpose:'Derive the API contract from signed-off BRDs + entity docs. v2 is the single source of truth and repo handoff point.',input:'Signed-off Forward BRDs + entity docs.',output:'forward/openapi.yaml (final v2).'},
+  {id:'11',phase:'contract',icon:'link',title:'Traceability Matrix',agent:'@traceability-matrix',desc:'Gap analysis',skill:'traceability-matrix',
+    purpose:'Link BRD ↔ OpenAPI ↔ test cases and run gap analysis so nothing is orphaned.',input:'Source docs vs BRDs.',output:'Traceability matrix.'},
+  {id:'12',phase:'contract',icon:'beaker',title:'Test Cases + Test Data',agent:'@test-case-generator',desc:'ATDD tests + seeds',skill:'test-case-generation · test-data-scenario',
+    purpose:'Turn forward BRD acceptance criteria into test-case docs and deterministic seed manifests.',input:'Forward BRD acceptance criteria.',output:'Test-case docs + deterministic test data.'},
+  {id:'H',phase:'handoff',icon:'handoff',title:'Contract Handoff',agent:'import',desc:'Read-only import',skill:'read-only into forward/ · testing/',
+    purpose:'Signed-off BRDs, the OpenAPI contract and test docs are imported read-only into the Modernization repo. Never hand-edit — fix upstream and re-import.',input:'openapi.yaml · BRDs · test docs.',output:'Populated forward/ and testing/ folders.'},
+  {id:'A',phase:'modern',human:true,icon:'bulb',title:'/opsx:propose',agent:'/opsx:propose',desc:'Scaffold + RED tests',skill:'openspec-propose · atdd-generate',
+    purpose:'Turn a signed-off BRD + contract into a change scaffold with tests written first (ATDD).',input:'Forward BRDs · openapi.yaml · test docs.',output:'proposal / design / specs / tasks + RED tests + SP seeds.'},
+  {id:'B',phase:'modern',icon:'gear',title:'/opsx:generate',agent:'/opsx:generate',desc:'Types, clients, stubs',skill:'opsx-generate',
+    purpose:'Produce contract-derived scaffolding so client and server share the same shapes — no drift.',input:'forward/openapi.yaml.',output:'TS types · Angular clients · Spring stubs.'},
+  {id:'C',phase:'modern',human:true,icon:'package',title:'/opsx:apply',agent:'/opsx:apply',desc:'Code + green gate',skill:'openspec-apply-change · opsx-apply-guard',
+    purpose:'Write production code one task at a time; a task flips to done only when its [TC-NNN] test turns GREEN.',input:'Tagged tasks · stubs · RED tests · BRDs.',output:'Spring + Angular code (SP-only writes); per-task green-gate.'},
+  {id:'D',phase:'modern',human:true,icon:'eye',title:'/opsx:review',agent:'/opsx:review',desc:'6-dimension review',skill:'opsx-code-review',
+    purpose:'Structured 6-dimension code review; flags any task marked done whose test is actually RED.',input:'Applied code + tasks + tests.',output:'APPROVE / REQUEST-CHANGES verdict.'},
+  {id:'E',phase:'modern',icon:'shield',title:'/opsx:verify',agent:'/opsx:verify',desc:'Verify artifacts',skill:'openspec-verify-change',
+    purpose:'Check implementation completeness, correctness & coherence against the change artifacts (tasks, specs, design). Checks that tests exist for scenario coverage, but does NOT execute them.',input:'Applied code + change artifacts.',output:'Structured verification report with scorecard (CRITICAL / WARNING / SUGGESTION) and archive readiness verdict.'},
+  {id:'F',phase:'modern',human:true,icon:'archive',title:'/opsx:sync + archive',agent:'/opsx:sync · archive',desc:'Sync & archive',skill:'openspec-sync-specs · openspec-archive-change',
+    purpose:'Fold verified work back into the living spec base and close the change — only succeeds on green.',input:'Verified change + evidence.',output:'Specs synced · change archived.'}
+];
+
+// ---------- serpentine geometry ----------
+const VW=1440, PER_ROW=5, R=165;
+const leftX=175, rightX=1265;
+const ROWY=[190,520,850,1180];
+const straightLen=rightX-leftX, turnLen=Math.PI*R, rowLen=straightLen+turnLen;
+const totalLen=(ROWY.length-1)*rowLen+straightLen;
+const VH=ROWY[ROWY.length-1]+180;
+const INSET=110, SPAN=straightLen-2*INSET, GAP=SPAN/(PER_ROW-1);
+const rC=28, pinGap=48;
+
+const rowOf=i=>Math.floor(i/PER_ROW);
+STEPS.forEach((s,i)=>{
+  const r=rowOf(i), p=i%PER_ROW, even=r%2===0;
+  s.x = even ? (leftX+INSET+p*GAP) : (rightX-INSET-p*GAP);
+  s.y = ROWY[r];
+  s.len = r*rowLen + (even ? (s.x-leftX) : (rightX-s.x));
+  s.above = i%2===0;
+});
+
+// track path
+let d=`M${leftX},${ROWY[0]}`;
+for(let r=0;r<ROWY.length;r++){
+  const even=r%2===0;
+  d += even ? ` L${rightX},${ROWY[r]}` : ` L${leftX},${ROWY[r]}`;
+  if(r<ROWY.length-1){
+    if(even) d += ` A${R} ${R} 0 0 1 ${rightX},${ROWY[r+1]}`;
+    else     d += ` A${R} ${R} 0 0 0 ${leftX},${ROWY[r+1]}`;
+  }
+}
+
+const svg=document.getElementById('flow');
+svg.setAttribute('viewBox',`0 0 ${VW} ${VH}`);
+svg.innerHTML=`<defs>
+  <filter id="pinShadow" x="-40%" y="-40%" width="180%" height="180%">
+    <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#1a2050" flood-opacity="0.22"/>
+  </filter>
+</defs>
+<path class="track" id="track" d="${d}"/>
+<g id="segs"></g><g id="stops"></g><g id="dots"></g>`;
+
+const gSegs=svg.querySelector('#segs'), gStops=svg.querySelector('#stops'), gDots=svg.querySelector('#dots'), track=svg.querySelector('#track');
+function el(t,a,p){const e=document.createElementNS(SVGNS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function wrap(str,max){const w=str.split(' ');const L=[];let c='';for(const x of w){if((c+' '+x).trim().length<=max)c=(c+' '+x).trim();else{if(c)L.push(c);c=x;}}if(c)L.push(c);return L;}
+
+// colored segments (source-stop phase colour)
+const segEls=[];
+for(let i=0;i<STEPS.length-1;i++){
+  const a=STEPS[i], b=STEPS[i+1];
+  const seg=el('path',{class:'seg',d, stroke:PHASES[a.phase].color,
+    'stroke-dasharray':`0 ${a.len} ${b.len-a.len} ${totalLen}`}, gSegs);
+  segEls.push(seg);
+}
+
+// stops
+STEPS.forEach(s=>{
+  const col=PHASES[s.phase].color;
+  const cy = s.above ? s.y-pinGap : s.y+pinGap;
+  const g=el('g',{class:'stop',id:'s-'+s.id},gStops);
+  g.dataset.title=s.title;g.dataset.phase=PHASES[s.phase].label;g.dataset.agent=s.agent||'';
+  g.dataset.skill=s.skill||'';g.dataset.purpose=s.purpose||'';g.dataset.input=s.input||'';g.dataset.output=s.output||'';
+  g.dataset.human=s.human?'1':'';g.dataset.reconcile=s.reconcile?'1':'';
+
+  el('circle',{class:'trackdot',cx:s.x,cy:s.y,r:4,fill:col},g);
+  const stemY = s.above ? cy+rC : cy-rC;
+  el('line',{class:'stem',x1:s.x,y1:s.y,x2:s.x,y2:stemY,stroke:col},g);
+
+  const pin=el('g',{class:'pin'},g);
+  if(s.reconcile) el('circle',{class:'halo',cx:s.x,cy:cy,r:rC+13},pin);
+  el('circle',{class:'ring',cx:s.x,cy:cy,r:rC,stroke:col,'stroke-width':3.5},pin);
+  const sz=26, ic=el('g',{class:'icon',transform:`translate(${s.x},${cy}) scale(${sz/24}) translate(-12,-12)`,stroke:col},pin);
+  ic.innerHTML=ICONS[s.icon]||'';
+
+  if(s.human){
+    const hx=s.x+rC*0.72, hy=cy-rC*0.72;
+    const hd=el('g',{class:'hdot'},pin);
+    el('circle',{class:'bg',cx:hx,cy:hy,r:9},hd);
+    const hs=11, hic=el('g',{class:'icon',transform:`translate(${hx},${hy}) scale(${hs/24}) translate(-12,-12)`},hd);
+    hic.innerHTML=ICONS.user;
+  }
+
+  // step-id badge (top-left of pin)
+  const bx2=s.x-rC*0.72, by2=cy-rC*0.72;
+  const idb=el('g',{class:'idbadge'},pin);
+  el('circle',{cx:bx2,cy:by2,r:10,fill:col},idb);
+  const idt=el('text',{x:bx2,y:by2+3.4,'text-anchor':'middle','font-size':'10.5','font-weight':'800',fill:'#fff'},idb);
+  idt.textContent=s.id;
+
+  // label (compact: title + agent + desc; phase shown by colour + legend)
+  const lines=[];
+  wrap(s.title,18).forEach(t=>lines.push({t,cls:'lbl'}));
+  if(s.agent && s.agent!=='source' && s.agent!=='import') lines.push({t:(s.agent.length>24?s.agent.slice(0,23)+'…':s.agent),cls:'agentT'});
+  if(s.desc) lines.push({t:s.desc,cls:'descT'});
+  const lh=14.5, n=lines.length;
+  const firstY = s.above ? (cy-rC-12-(n-1)*lh) : (cy+rC+19);
+  const lg=el('g',{class:'label'},g);
+  lines.forEach((ln,i)=>{ const tx=el('text',{class:ln.cls,x:s.x,y:firstY+i*lh,'text-anchor':'middle'},lg); if(ln.fill) tx.setAttribute('fill',ln.fill); tx.textContent=ln.t; });
+});
+
+// legend
+const legend=document.getElementById('legend');
+Object.values(PHASES).forEach(p=>{const s=document.createElement('span');s.className='it';s.innerHTML=`<span class="sw" style="background:${p.color}"></span> ${p.label}`;legend.appendChild(s);});
+const hl=document.createElement('span');hl.className='it';hl.innerHTML=`<span class="halo-sw"></span> Human-in-the-loop / reconciliation`;legend.appendChild(hl);
+
+// ---------- animation ----------
+let master, pulseDot;
+function initHidden(){
+  if(!hasGSAP) return;
+  const len=track.getTotalLength();
+  gsap.set(track,{strokeDasharray:len,strokeDashoffset:len});
+  gsap.set('.seg',{autoAlpha:0});
+  gStops.querySelectorAll('.stop').forEach(st=>{
+    const pin=st.querySelector('.pin'), tp=st.querySelector('.trackdot');
+    const x=tp.getAttribute('cx'), y=tp.getAttribute('cy');
+    gsap.set(pin,{scale:0,autoAlpha:0,svgOrigin:`${x} ${y}`});
+    gsap.set(st.querySelector('.stem'),{scaleY:0,svgOrigin:`${x} ${y}`,transformOrigin:'center'});
+    gsap.set(st.querySelector('.label'),{autoAlpha:0,y:6});
+    gsap.set(tp,{scale:0,autoAlpha:0,svgOrigin:`${x} ${y}`});
+  });
+}
+function build(){
+  initHidden();
+  if(!hasGSAP) return;
+  const tl=gsap.timeline({defaults:{ease:'power2.out'},onComplete:ambient});
+  tl.to(track,{strokeDashoffset:0,duration:1.1,ease:'power1.inOut'})
+    .to('.seg',{autoAlpha:1,duration:0.35,stagger:0.09},'-=0.7');
+  STEPS.forEach((s,i)=>{
+    const st=svg.querySelector('#s-'+s.id);
+    const at=1.1+i*0.11;
+    tl.to(st.querySelector('.trackdot'),{scale:1,autoAlpha:1,duration:0.25},at)
+      .to(st.querySelector('.stem'),{scaleY:1,duration:0.25},at+0.03)
+      .to(st.querySelector('.pin'),{scale:1,autoAlpha:1,duration:0.5,ease:'back.out(1.7)'},at+0.05)
+      .to(st.querySelector('.label'),{autoAlpha:1,y:0,duration:0.4},at+0.15);
+  });
+  master=tl;
+}
+function ambient(){
+  if(!hasGSAP) return;
+  gsap.to('.halo',{scale:1.18,opacity:0.07,duration:1.7,yoyo:true,repeat:-1,ease:'sine.inOut',stagger:0.2,transformOrigin:'center'});
+  pulseDot=el('circle',{r:6,class:'pulse'},gDots);
+  gsap.to(pulseDot,{motionPath:{path:track,align:track,alignOrigin:[0.5,0.5]},duration:9,repeat:-1,ease:'none'});
+}
+function replay(){ if(pulseDot){pulseDot.remove();pulseDot=null;} gsap.killTweensOf('.halo'); if(master)master.kill(); build(); }
+document.getElementById('replay').addEventListener('click',replay);
+
+// ---------- tooltip ----------
+const tip=document.getElementById('tip');
+function fillTip(g){const d=g.dataset;let h=`<div class="t-phase">${d.phase}</div><div class="t-title">${d.title}</div>`;
+  if(d.agent&&d.agent!=='source'&&d.agent!=='import')h+=`<div class="t-row"><b>Agent:</b> ${d.agent}</div>`;
+  if(d.skill)h+=`<div class="t-row"><b>Skill:</b> <code>${d.skill}</code></div>`;
+  if(d.purpose)h+=`<div class="t-row"><b>Purpose:</b> ${d.purpose}</div>`;
+  if(d.input&&d.input!=='—')h+=`<div class="t-row"><b>Input:</b> ${d.input}</div>`;
+  if(d.output)h+=`<div class="t-row"><b>Output:</b> ${d.output}</div>`;
+  if(d.human)h+=`<div class="t-row"><b>Human-in-the-loop</b>${d.reconcile?' · reconciliation':''}</div>`;
+  tip.innerHTML=h;}
+function moveTip(e){const pad=16,w=tip.offsetWidth,h=tip.offsetHeight;let x=e.clientX+pad,y=e.clientY+pad;
+  if(x+w>window.innerWidth)x=e.clientX-w-pad; if(y+h>window.innerHeight)y=e.clientY-h-pad; tip.style.left=x+'px';tip.style.top=y+'px';}
+gStops.querySelectorAll('.stop').forEach(g=>{
+  g.addEventListener('mouseenter',e=>{fillTip(g);tip.classList.add('show');moveTip(e);});
+  g.addEventListener('mousemove',moveTip);
+  g.addEventListener('mouseleave',()=>tip.classList.remove('show'));
+  g.addEventListener('click',e=>{fillTip(g);tip.classList.add('show');moveTip(e);setTimeout(()=>tip.classList.remove('show'),4500);});
+});
+
+function boot(){ track.getTotalLength(); build(); }
+if(document.readyState==='complete') boot(); else window.addEventListener('load',boot);
+</script>
+</body>
+</html>
